@@ -1,10 +1,9 @@
-.task-list li {
+.task-item {
     background-color: #fff;
-    transition: background-color 0.2s;
+    transition: background-color 0.5s;
 }
 
 /*
-.task-list li:hover {
+.task-item:hover {
     background-color: #f0f0f0;
-}
-*/
+}*/

@@ -6,31 +6,41 @@ const STYLES = {
         backgroundColor: "#fff",
     },
 };
+const MESSAGES = {
+    defaultCounterText : "No symbols entered",
+    counterTextPattern : "%count %symbols entered",
+}
 function applyStyle(element, style) {
-    Object.assign(element.style, style);
+    element.style.backgroundColor =  style.backgroundColor;
 }
 
 function createTaskElement(taskText) {
     const li = document.createElement("li");
+    li.classList.add("task-item");
     li.textContent = taskText;
     li.addEventListener("mouseover", () => applyStyle(li, STYLES.liMouseOver));
     li.addEventListener("mouseout", () => applyStyle(li, STYLES.liDefault));
     return li;
 }
 
-function addTask(taskList, taskText) {
-    if (taskText.trim() !== "") {
-        const li = createTaskElement(taskText.trim());
+function addTaskElement(taskList, taskInput, charCounter) {
+    const taskText = taskInput.value.trim();
+    if (taskText !== "") {
+        const li = createTaskElement(taskText);
         taskList.appendChild(li);
-        return true;
+        taskInput.value = "";
+        updateCharCounter(taskInput, charCounter);
     }
-    return false;
 }
 
 function updateCharCounter(taskInput, charCounter) {
-    const length = taskInput.value.length === 0 ? "No" : "" + taskInput.value.length;
-    const symbolText = taskInput.value.length === 1? "symbol" : "symbols";
-    charCounter.textContent = `${length} ${symbolText} entered.`;
+    if (taskInput.value.length === 0) {
+        taskInput.title = charCounter.textContent = MESSAGES.defaultCounterText;
+        return;
+    }
+    taskInput.title = charCounter.textContent = MESSAGES.counterTextPattern
+        .replace("%count", taskInput.value.length)
+        .replace("%symbols", taskInput.value.length === 1? "symbol" : "symbols");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -40,26 +50,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const charCounter = document.getElementById("charCounter");
 
     if (!taskInput || !taskList || !addButton || !charCounter) {
-        console.error("DOM elements not found!");
+        console.error("DOM elements are not found!");
         return;
     }
-    addButton.addEventListener("click", () => {
-        if (addTask(taskList, taskInput.value)) {
-            taskInput.value = "";
-            updateCharCounter(taskInput, charCounter)
-        }
-    });
+    console.log(taskInput.title);
+    console.log(charCounter.textContent);
+    taskInput.title = taskInput.title || MESSAGES.defaultCounterText;
+    charCounter.textContent = charCounter.textContent || MESSAGES.defaultCounterText;
+    console.log(taskInput.title);
+    console.log(charCounter.textContent);
+
+    addButton.addEventListener("click",
+        () => addTaskElement(taskList, taskInput, charCounter)
+    );
 
     taskInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            if (addTask(taskList, taskInput.value)) {
-                taskInput.value = "";
-                updateCharCounter(taskInput, charCounter)
-            }
+            addTaskElement(taskList, taskInput, charCounter);
         }
     });
 
-    addButton.addEventListener("contextmenu", (event    ) => {
+    addButton.addEventListener("contextmenu", (event) => {
         event.preventDefault();
         alert("Right-clicking is not available for this button!");
     });
