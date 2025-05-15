@@ -1,0 +1,10 @@
+.task-list li {
+    background-color: #fff;
+    transition: background-color 0.2s;
+}
+
+/*
+.task-list li:hover {
+    background-color: #f0f0f0;
+}
+*/
