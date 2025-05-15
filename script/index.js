@@ -53,12 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("DOM elements are not found!");
         return;
     }
-    console.log(taskInput.title);
-    console.log(charCounter.textContent);
     taskInput.title = taskInput.title || MESSAGES.defaultCounterText;
     charCounter.textContent = charCounter.textContent || MESSAGES.defaultCounterText;
-    console.log(taskInput.title);
-    console.log(charCounter.textContent);
 
     addButton.addEventListener("click",
         () => addTaskElement(taskList, taskInput, charCounter)
