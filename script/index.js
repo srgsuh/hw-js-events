@@ -10,6 +10,9 @@ const MESSAGES = {
     defaultCounterText : "No symbols entered",
     counterTextPattern : "%count %symbols entered",
 }
+
+const menuManager = new MenuManager();
+
 function applyStyle(element, style) {
     element.style.backgroundColor =  style.backgroundColor;
 }
@@ -57,13 +60,31 @@ function initCharCounter(charCounter, taskInput) {
     taskInput.title = charCounter.textContent = charCounter.defaultValue;
 }
 
-function handleRightClick(event, taskInput, charCounter, taskList) {
+function clearInput(taskInput, charCounter) {
+    taskInput.value = "";
+    updateCharCounter(taskInput, charCounter);
+}
+
+function showTasksCount(taskList) {
+    alert(`There are ${taskList.childElementCount} tasks in the list.`);
+}
+
+function handleRightClick(event, menuId, taskInput, charCounter, taskList) {
     event.preventDefault();
-    showContextMenu(event.pageX, event.pageY,[
-        {label: "Clear input", onClick: () => clearInput(taskInput, charCounter)},
-        {label: "Count tasks", onClick: () => showTasksCount(taskList)},
+    menuManager.show(menuId, event.pageX, event.pageY,[
+        {   label: "Clear input",
+            onClick: () => clearInput(taskInput, charCounter),
+            className: "menu-item",
+        },
+        {
+            label: "Count tasks",
+            onClick: () => showTasksCount(taskList),
+            className: "menu-item",
+        },
     ]);
 }
+
+menuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
 
 document.addEventListener("DOMContentLoaded", () => {
     const taskInput = document.getElementById("taskInput");
@@ -88,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     addButton.addEventListener("contextmenu", (event) => {
-        handleRightClick(event, taskInput, charCounter, taskList);
+        handleRightClick(event, "button-add", taskInput, charCounter, taskList);
     });
 
     taskInput.addEventListener("input", () => updateCharCounter(taskInput, charCounter));
