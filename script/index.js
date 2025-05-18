@@ -35,12 +35,26 @@ function addTaskElement(taskList, taskInput, charCounter) {
 
 function updateCharCounter(taskInput, charCounter) {
     if (taskInput.value.length === 0) {
-        taskInput.title = charCounter.textContent = MESSAGES.defaultCounterText;
+        taskInput.title = charCounter.textContent = charCounter.defaultCounterText;
         return;
     }
-    taskInput.title = charCounter.textContent = MESSAGES.counterTextPattern
+    taskInput.title = charCounter.textContent = charCounter.counterTextPattern
         .replace("%count", taskInput.value.length)
         .replace("%symbols", taskInput.value.length === 1? "symbol" : "symbols");
+}
+
+function checkForDomElementsLoaded(...elements) {
+    if (elements.some(element => !element)) {
+        console.error("DOM elements are not found!");
+        return false;
+    }
+    return true;
+}
+
+function initCharCounter(charCounter, taskInput) {
+    charCounter.defaultValue = charCounter.textContent || MESSAGES.defaultCounterText;
+    charCounter.counterTextPattern = MESSAGES.counterTextPattern;
+    taskInput.title = charCounter.textContent = charCounter.defaultValue;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -49,12 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const addButton = document.getElementById("addButton");
     const charCounter = document.getElementById("charCounter");
 
-    if (!taskInput || !taskList || !addButton || !charCounter) {
-        console.error("DOM elements are not found!");
+    if (!checkForDomElementsLoaded(taskInput, taskList, addButton, charCounter)) {
         return;
     }
-    taskInput.title = taskInput.title || MESSAGES.defaultCounterText;
-    charCounter.textContent = charCounter.textContent || MESSAGES.defaultCounterText;
+
+    initCharCounter();
 
     addButton.addEventListener("click",
         () => addTaskElement(taskList, taskInput, charCounter)
