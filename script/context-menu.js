@@ -15,6 +15,7 @@ class MenuManager {
     show(menuId, x, y, actions) {
         const menu = this._menus.get(menuId);
         if (menu) {
+            this.hideAll();
             menu.show(x, y, actions);
         }
     }

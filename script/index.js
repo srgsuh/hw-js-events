@@ -11,8 +11,6 @@ const MESSAGES = {
     counterTextPattern : "%count %symbols entered",
 }
 
-const customMenuManager = new MenuManager();
-
 function applyStyle(element, style) {
     element.style.backgroundColor =  style.backgroundColor || element.style.backgroundColor;
     element.style.textDecoration = style.textDecoration || element.style.textDecoration;
@@ -33,7 +31,13 @@ function createActionIcon(imgPath, imgAlt, onClick) {
     return img;
 }
 
-function createTaskElement(taskText) {
+function setCustomContextMenu(event, menuManager, menuId, actions) {
+    event.preventDefault();
+    event.stopPropagation();
+    menuManager.show(menuId, event.pageX, event.pageY, actions);
+}
+
+function createTaskElement(taskText, menuManager, menuId) {
     const li = document.createElement("li");
     li.appendChild(createTaskTextSpan(taskText));
     li.appendChild(createActionIcon("../img/pencil.svg",
@@ -46,13 +50,19 @@ function createTaskElement(taskText) {
     ));
     li.addEventListener("mouseover", () => applyStyle(li, STYLES.liMouseOver));
     li.addEventListener("mouseout", () => applyStyle(li, STYLES.liDefault));
+    li.addEventListener("contextmenu",
+        (event) => setCustomContextMenu(
+            event, menuManager, menuId, [
+        {label: "Cross off the list", onClick: () => toggleCrossedOff(li)},
+        {label: "Remove from the list", onClick: () => li.remove()},
+    ]));
     return li;
 }
 
-function addTaskElement(taskList, taskInput, charCounter) {
+function addTaskElement(taskList, taskInput, charCounter, menuManager, menuId) {
     const taskText = taskInput.value.trim();
     if (taskText !== "") {
-        const li = createTaskElement(taskText);
+        const li = createTaskElement(taskText, menuManager, menuId);
         taskList.appendChild(li);
         taskInput.value = "";
         updateCharCounter(taskInput, charCounter);
@@ -92,22 +102,6 @@ function showTasksCount(taskList) {
     alert(`There are ${taskList.childElementCount} tasks in the list.`);
 }
 
-function handleAddBtnRightClick(event, menuToShow, taskInput, charCounter, taskList) {
-    event.preventDefault();
-    event.stopPropagation();
-    menuToShow.show(event.pageX, event.pageY,[
-        {   label: "Clear input",
-            onClick: () => clearInput(taskInput, charCounter),
-            className: "menu-item",
-        },
-        {
-            label: "Count tasks",
-            onClick: () => showTasksCount(taskList),
-            className: "menu-item",
-        },
-    ]);
-}
-
 function toggleCrossedOff(taskElement) {
     if (taskElement.classList.contains("crossed-off")) {
         taskElement.classList.remove("crossed-off");
@@ -119,24 +113,12 @@ function toggleCrossedOff(taskElement) {
     }
 }
 
-function handleTaskElementRightClick(event, menuToShow, taskElement) {
-    event.preventDefault();
-    event.stopPropagation();
-    menuToShow.show(event.pageX, event.pageY, [
-        {
-            label: "Remove from the list",
-            onClick: () => taskElement.remove(),
-            className: "menu-item",
-        },
-        {
-            label: "Cross off the list",
-            onClick: () => toggleCrossedOff(taskElement),
-            className: "menu-item",
-        }
+function handleAddBtnRightClick(event, manager, mId, taskInput, charCounter, taskList) {
+    setCustomContextMenu(event, manager, mId, [
+        {label: "Clear input", onClick: () => clearInput(taskInput, charCounter)},
+        {label: "Count tasks", onClick: () => showTasksCount(taskList)},
     ]);
 }
-
-customMenuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
 
 document.addEventListener("DOMContentLoaded", () => {
     const taskInput = document.getElementById("taskInput");
@@ -147,40 +129,42 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!checkForDomElementsLoaded(taskInput, taskList, addButton, charCounter)) {
         return;
     }
-
+    const menuManager = new MenuManager();
+    menuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
+    menuManager.add("task-element", new ContextMenu("task-element", ["custom-menu"]));
     initCharCounter(charCounter, taskInput);
 
     addButton.addEventListener("click",
-        () => addTaskElement(taskList, taskInput, charCounter)
+        () => addTaskElement(taskList, taskInput, charCounter, menuManager.get("task-element"))
     );
 
     taskInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            addTaskElement(taskList, taskInput, charCounter);
+            addTaskElement(taskList, taskInput, charCounter, menuManager, "task-element");
         }
     });
 
     addButton.addEventListener("contextmenu", (event) => {
-        handleAddBtnRightClick(event, customMenuManager.get("button-add"), taskInput, charCounter, taskList);
+        handleAddBtnRightClick(event, menuManager, "button-add", taskInput, charCounter, taskList);
     });
+
+    taskInput.addEventListener("input", () => updateCharCounter(taskInput, charCounter));
 
     // menus
     document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
-            customMenuManager.hideAll();
+            menuManager.hideAll();
         }
     });
     document.addEventListener("click", (event) => {
         if (event.button === 0) {
-            customMenuManager.hideAll();
+            menuManager.hideAll();
         }
     });
     document.addEventListener("contextmenu", () => {
-        customMenuManager.hideAll();
+        menuManager.hideAll();
     });
     window.addEventListener('resize', () => {
-        customMenuManager.hideAll();
+        menuManager.hideAll();
     });
-
-    taskInput.addEventListener("input", () => updateCharCounter(taskInput, charCounter));
 });
