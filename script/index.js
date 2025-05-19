@@ -121,22 +121,21 @@ document.addEventListener("DOMContentLoaded", () => {
     menuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
     menuManager.add("task-element", new ContextMenu("task-element", ["custom-menu"]));
 
-    const actMap = new Map();
-    const actCross = {
-        label: "Toggle crossed on/off",
-        actionId: "cross",
-        path: "../img/pencil.svg",
-        onClick: (event, element) => {switchElementStyles(element, STYLES.uncrossed, STYLES.crossed)},
-    };
-    const actRemove = {
-        label: "Remove from the list",
-        actionId: "remove",
-        path: "../img/trash.svg",
-        onClick: (event, element) => {element.remove()},
-    };
-    actMap.set(actCross.actionId, actCross);
-    actMap.set(actRemove.actionId, actRemove);
-    //const actions = [...actMap.values()];
+    const actions =[
+        {
+            label: "Toggle crossed on/off",
+            actionId: "cross",
+            path: "../img/pencil.svg",
+            onClick: (event, element) => {switchElementStyles(element, STYLES.uncrossed, STYLES.crossed)},
+        },
+        {
+            label: "Remove from the list",
+            actionId: "remove",
+            path: "../img/trash.svg",
+            onClick: (event, element) => {element.remove()},
+        }
+    ];
+    const actMap = actions.reduce((acc, action) => acc.set(action.actionId, action), new Map());
 
     initCharCounter(charCounter, taskInput);
 
@@ -156,19 +155,21 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!li) {
             return;
         }
-        const menuActions = actMap.values().map(
-            action => ({label: action.label, onClick: () => {action.onClick(event, li)}})
+        const menuActions = actions.map(
+            action => (
+                {label: action.label, onClick: () => {action.onClick(event, li)}}
+            )
         );
         setCustomContextMenu(event, menuManager, "task-element", menuActions);
     })
 
     addButton.addEventListener("click",
-        () => addTaskElement(taskList, taskInput, charCounter, [...actMap.values()])
+        () => addTaskElement(taskList, taskInput, charCounter, actions)
     );
 
     taskInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            addTaskElement(taskList, taskInput, charCounter, [...actMap.values()]);
+            addTaskElement(taskList, taskInput, charCounter, actions);
         }
     });
 
