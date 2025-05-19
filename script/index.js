@@ -76,10 +76,8 @@ function checkForDomElementsLoaded(elements) {
     const message = elements.filter(([_, element]) => !element)
         .flatMap(([id, _]) => `element with id=${id} is not found`)
         .join(", ");
-    console.log('message = ' + message);
     if (message !== "") {
         console.error(`There were errors while loading DOM: ${message}`);
-        alert(`There were errors while loading DOM: ${message}`);
         return false;
     }
     return true;
