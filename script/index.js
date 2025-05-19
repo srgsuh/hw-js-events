@@ -34,33 +34,28 @@ function createTaskTextSpan(taskText) {
     return span;
 }
 
-function createActionIcon(imgPath, action) {
+function createActionIcon(action) {
     const img = document.createElement("img");
-    img.src = imgPath;
+    img.src = action.path;
     img.alt = img.title = action.label;
+    img.dataset.actionId = action.actionId;
     return img;
 }
 
-function createTaskElement(taskText) {
+function createTaskElement(taskText, actions) {
     const li = document.createElement("li");
     li.classList.add(STYLES.uncrossed, STYLES.mouseOut);
 
-    const btnCross = li.appendChild(createActionIcon("../img/pencil.svg",{label: "Toggle crossed on/off"}));
-    btnCross.dataset.action = "cross";
-    const btnRemove = li.appendChild(createActionIcon("../img/trash.svg", {label: "Remove from the list"}));
-    btnRemove.dataset.action = "remove";
-
     li.appendChild(createTaskTextSpan(taskText));
-    li.appendChild(btnCross);
-    li.appendChild(btnRemove);
+    actions.forEach(action => li.appendChild(createActionIcon(action)));
 
     return li;
 }
 
-function addTaskElement(taskList, taskInput, charCounter) {
+function addTaskElement(taskList, taskInput, charCounter, actions) {
     const taskText = taskInput.value.trim();
     if (taskText !== "") {
-        const li = createTaskElement(taskText);
+        const li = createTaskElement(taskText, actions);
         taskList.appendChild(li);
         taskInput.value = "";
         updateCharCounter(taskInput, charCounter);
@@ -125,37 +120,55 @@ document.addEventListener("DOMContentLoaded", () => {
     const menuManager = new MenuManager();
     menuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
     menuManager.add("task-element", new ContextMenu("task-element", ["custom-menu"]));
+
+    const actMap = new Map();
+    const actCross = {
+        label: "Toggle crossed on/off",
+        actionId: "cross",
+        path: "../img/pencil.svg",
+        onClick: (event, element) => {switchElementStyles(element, STYLES.uncrossed, STYLES.crossed)},
+    };
+    const actRemove = {
+        label: "Remove from the list",
+        actionId: "remove",
+        path: "../img/trash.svg",
+        onClick: (event, element) => {element.remove()},
+    };
+    actMap.set(actCross.actionId, actCross);
+    actMap.set(actRemove.actionId, actRemove);
+    //const actions = [...actMap.values()];
+
     initCharCounter(charCounter, taskInput);
 
     taskList.addEventListener("mouseover", handleMouseOverLi);
-
     taskList.addEventListener("mouseout", handleMouseOverLi);
 
     taskList.addEventListener("click", (event) => {
         const li = event.target.closest("li");
-        if (!li) {
-            return;
-        }
-        const action = event.target.dataset.action;
-        switch (action) {
-            case "cross": {
-                switchElementStyles(li, STYLES.uncrossed, STYLES.crossed);
-                break;
-            }
-            case "remove": {
-                li.remove();
-                break;
-            }
+        const actionId = event.target.dataset.actionId;
+        if (li && actionId && actMap.has(actionId)) {
+            actMap.get(actionId).onClick(event, li);
         }
     });
 
+    taskList.addEventListener("contextmenu", (event) => {
+        const li = event.target.closest("li");
+        if (!li) {
+            return;
+        }
+        const menuActions = actMap.values().map(
+            action => ({label: action.label, onClick: () => {action.onClick(event, li)}})
+        );
+        setCustomContextMenu(event, menuManager, "task-element", menuActions);
+    })
+
     addButton.addEventListener("click",
-        () => addTaskElement(taskList, taskInput, charCounter)
+        () => addTaskElement(taskList, taskInput, charCounter, [...actMap.values()])
     );
 
     taskInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            addTaskElement(taskList, taskInput, charCounter);
+            addTaskElement(taskList, taskInput, charCounter, [...actMap.values()]);
         }
     });
 
