@@ -72,9 +72,14 @@ function updateCharCounter(taskInput, charCounter) {
         .replace("%symbols", taskInput.value.length === 1? "symbol" : "symbols");
 }
 
-function checkForDomElementsLoaded(...elements) {
-    if (elements.some(element => !element)) {
-        console.error("DOM elements are not found!");
+function checkForDomElementsLoaded(elements) {
+    const message = elements.filter(([_, element]) => !element)
+        .flatMap(([id, _]) => `element with id=${id} is not found`)
+        .join(", ");
+    console.log('message = ' + message);
+    if (message !== "") {
+        console.error(`There were errors while loading DOM: ${message}`);
+        alert(`There were errors while loading DOM: ${message}`);
         return false;
     }
     return true;
@@ -109,14 +114,14 @@ function handleMouseOverLi(event) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const taskInput = document.getElementById("taskInput");
-    const taskList = document.getElementById("taskList");
-    const addButton = document.getElementById("addButton");
-    const charCounter = document.getElementById("charCounter");
-
-    if (!checkForDomElementsLoaded(taskInput, taskList, addButton, charCounter)) {
+    const domElements = ["taskInput", "taskList", "addButton", "charCounter"].map(
+        str => ([str, document.getElementById(str)]));
+    if (!checkForDomElementsLoaded(domElements)) {
         return;
     }
+    const [taskInput, taskList, addButton, charCounter]
+        = domElements.flatMap(([_, element]) => element);
+
     const menuManager = new MenuManager();
     menuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
     menuManager.add("task-element", new ContextMenu("task-element", ["custom-menu"]));
