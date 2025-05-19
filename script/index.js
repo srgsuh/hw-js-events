@@ -11,16 +11,31 @@ const MESSAGES = {
     counterTextPattern : "%count %symbols entered",
 }
 
-const menuManager = new MenuManager();
+const customMenuManager = new MenuManager();
 
 function applyStyle(element, style) {
     element.style.backgroundColor =  style.backgroundColor;
 }
 
+function createTaskTextSpan(taskText) {
+    const span = document.createElement("span");
+    span.textContent = taskText;
+    span.classList.add("task-text");
+    return span;
+}
+
+function createSvg(imgPath, imgAlt) {
+    const img = document.createElement("img");
+    img.src = imgPath;
+    img.alt = img.title = imgAlt;
+    return img;
+}
+
 function createTaskElement(taskText) {
     const li = document.createElement("li");
-    li.classList.add("task-item");
-    li.textContent = taskText;
+    li.appendChild(createTaskTextSpan(taskText));
+    li.appendChild(createSvg("../img/pencil.svg", "Cross off the list"));
+    li.appendChild(createSvg("../img/trash.svg", "Remove from the list"));
     li.addEventListener("mouseover", () => applyStyle(li, STYLES.liMouseOver));
     li.addEventListener("mouseout", () => applyStyle(li, STYLES.liDefault));
     return li;
@@ -69,9 +84,10 @@ function showTasksCount(taskList) {
     alert(`There are ${taskList.childElementCount} tasks in the list.`);
 }
 
-function handleRightClick(event, menuId, taskInput, charCounter, taskList) {
+function handleAddBtnRightClick(event, menuToShow, taskInput, charCounter, taskList) {
     event.preventDefault();
-    menuManager.show(menuId, event.pageX, event.pageY,[
+    event.stopPropagation();
+    menuToShow.show(event.pageX, event.pageY,[
         {   label: "Clear input",
             onClick: () => clearInput(taskInput, charCounter),
             className: "menu-item",
@@ -84,7 +100,7 @@ function handleRightClick(event, menuId, taskInput, charCounter, taskList) {
     ]);
 }
 
-menuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
+customMenuManager.add("button-add", new ContextMenu("button-add", ["custom-menu"]));
 
 document.addEventListener("DOMContentLoaded", () => {
     const taskInput = document.getElementById("taskInput");
@@ -109,7 +125,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     addButton.addEventListener("contextmenu", (event) => {
-        handleRightClick(event, "button-add", taskInput, charCounter, taskList);
+        handleAddBtnRightClick(event, customMenuManager.get("button-add"), taskInput, charCounter, taskList);
+    });
+
+    // menus
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            customMenuManager.hideAll();
+        }
+    });
+    document.addEventListener("click", (event) => {
+        if (event.button === 0) {
+            customMenuManager.hideAll();
+        }
+    });
+    document.addEventListener("contextmenu", (event) => {
+        customMenuManager.hideAll();
+    });
+    window.addEventListener('resize', () => {
+        customMenuManager.hideAll();
     });
 
     taskInput.addEventListener("input", () => updateCharCounter(taskInput, charCounter));

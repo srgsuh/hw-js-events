@@ -1,24 +1,97 @@
-.task-item {
-    background-color: #fff;
-    transition: background-color 1s;
+body {
+    font-family: Arial, sans-serif;
+    margin: 30px;
+    padding: 0;
+    background-color: #ffffff;
+    color: #333;
+}
+
+.task-text {
+    display: inline-block;
+    width: 100%;
+    flex: 1 0 0;
+}
+
+/* Style input field */
+#taskInput {
+    padding: 8px 12px;
+    font-size: 16px;
+    width: 250px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+/* Style add button */
+#addButton {
+    padding: 8px 16px;
+    font-size: 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#addButton:hover {
+    background-color: #0056b3;
+}
+
+/* Style the character counter */
+#charCount {
+    font-size: 14px;
+    color: #666;
+    margin: 8px 0 16px;
+}
+
+/* Style the task list */
+#taskList {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 20px;
+}
+
+/* Style each task item */
+#taskList li {
+    display : flex;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#taskList li img {
+    cursor: pointer;
+    height: 16px;
+    margin: 0 4px;
+}
+/* Hover effect with animation on task items*/
+#taskList li:hover {
+    transition-duration: 1s;
+    background-color: #e6fff1;
 }
 
 .custom-menu {
     position: absolute;
     background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    min-width: 150px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    padding: 0;
+    list-style: none;
+    width: 180px;
     z-index: 1000;
 }
 
-.menu-item {
-    padding: 8px 12px;
+.custom-menu > button{
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    background: none;
+    border: none;
     cursor: pointer;
 }
 
-/*
-.task-item:hover {
+.custom-menu > button:hover {
     background-color: #f0f0f0;
-}*/
+}

@@ -3,7 +3,10 @@ class MenuManager {
     constructor() {
         this._menus = new Map();
     }
-    subscribe(menuId, menu) {
+    get(menuId) {
+        return this._menus.get(menuId);
+    }
+    add(menuId, menu) {
         this._menus.set(menuId, menu);
     }
     hideAll() {
@@ -20,10 +23,6 @@ class MenuManager {
         if (menu) {
             menu.hide();
         }
-    }
-    add(menuId, menu) {
-        this.subscribe(menuId, menu);
-        return menu;
     }
 }
 
