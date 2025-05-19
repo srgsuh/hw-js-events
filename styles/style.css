@@ -12,6 +12,14 @@ body {
     flex: 1 0 0;
 }
 
+.crossed-off {
+    text-decoration: line-through;
+}
+
+.uncrossed-off {
+    text-decoration: none;
+}
+
 /* Style input field */
 #taskInput {
     padding: 8px 12px;

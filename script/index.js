@@ -14,7 +14,8 @@ const MESSAGES = {
 const customMenuManager = new MenuManager();
 
 function applyStyle(element, style) {
-    element.style.backgroundColor =  style.backgroundColor;
+    element.style.backgroundColor =  style.backgroundColor || element.style.backgroundColor;
+    element.style.textDecoration = style.textDecoration || element.style.textDecoration;
 }
 
 function createTaskTextSpan(taskText) {
@@ -24,18 +25,25 @@ function createTaskTextSpan(taskText) {
     return span;
 }
 
-function createSvg(imgPath, imgAlt) {
+function createActionIcon(imgPath, imgAlt, onClick) {
     const img = document.createElement("img");
     img.src = imgPath;
     img.alt = img.title = imgAlt;
+    img.addEventListener("click", onClick);
     return img;
 }
 
 function createTaskElement(taskText) {
     const li = document.createElement("li");
     li.appendChild(createTaskTextSpan(taskText));
-    li.appendChild(createSvg("../img/pencil.svg", "Cross off the list"));
-    li.appendChild(createSvg("../img/trash.svg", "Remove from the list"));
+    li.appendChild(createActionIcon("../img/pencil.svg",
+            "Cross off the list",
+            () => toggleCrossedOff(li)
+    ));
+    li.appendChild(createActionIcon("../img/trash.svg",
+        "Remove from the list",
+        ()=> li.remove()
+    ));
     li.addEventListener("mouseover", () => applyStyle(li, STYLES.liMouseOver));
     li.addEventListener("mouseout", () => applyStyle(li, STYLES.liDefault));
     return li;
@@ -97,6 +105,34 @@ function handleAddBtnRightClick(event, menuToShow, taskInput, charCounter, taskL
             onClick: () => showTasksCount(taskList),
             className: "menu-item",
         },
+    ]);
+}
+
+function toggleCrossedOff(taskElement) {
+    if (taskElement.classList.contains("crossed-off")) {
+        taskElement.classList.remove("crossed-off");
+        taskElement.classList.add("uncrossed-off");
+    }
+    else {
+        taskElement.classList.remove("uncrossed-off");
+        taskElement.classList.add("crossed-off");
+    }
+}
+
+function handleTaskElementRightClick(event, menuToShow, taskElement) {
+    event.preventDefault();
+    event.stopPropagation();
+    menuToShow.show(event.pageX, event.pageY, [
+        {
+            label: "Remove from the list",
+            onClick: () => taskElement.remove(),
+            className: "menu-item",
+        },
+        {
+            label: "Cross off the list",
+            onClick: () => toggleCrossedOff(taskElement),
+            className: "menu-item",
+        }
     ]);
 }
 
