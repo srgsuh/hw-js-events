@@ -1,19 +1,24 @@
 const STYLES = {
-    liMouseOver: {
-        backgroundColor: "#f0f0f0",
-    },
-    liDefault: {
-        backgroundColor: "#fff",
-    },
+    mouseOver: "mouse-over",
+    mouseOut: "mouse-out",
+    crossed: "crossed-off",
+    uncrossed: "uncrossed-off",
 };
+
 const MESSAGES = {
     defaultCounterText : "No symbols entered",
     counterTextPattern : "%count %symbols entered",
-}
+};
 
-function applyStyle(element, style) {
-    element.style.backgroundColor =  style.backgroundColor || element.style.backgroundColor;
-    element.style.textDecoration = style.textDecoration || element.style.textDecoration;
+function switchElementStyles(element, styleOne, styleTwo) {
+    if (element.classList.contains(styleOne)) {
+        element.classList.remove(styleOne);
+        element.classList.add(styleTwo);
+    }
+    else {
+        element.classList.remove(styleTwo);
+        element.classList.add(styleOne);
+    }
 }
 
 function createTaskTextSpan(taskText) {
@@ -23,11 +28,11 @@ function createTaskTextSpan(taskText) {
     return span;
 }
 
-function createActionIcon(imgPath, imgAlt, onClick) {
+function createActionIcon(imgPath, action) {
     const img = document.createElement("img");
     img.src = imgPath;
-    img.alt = img.title = imgAlt;
-    img.addEventListener("click", onClick);
+    img.alt = img.title = action.label;
+    img.addEventListener("click", action.onClick);
     return img;
 }
 
@@ -39,23 +44,18 @@ function setCustomContextMenu(event, menuManager, menuId, actions) {
 
 function createTaskElement(taskText, menuManager, menuId) {
     const li = document.createElement("li");
+    li.classList.add(STYLES.uncrossed,STYLES.mouseOut);
     li.appendChild(createTaskTextSpan(taskText));
-    li.appendChild(createActionIcon("../img/pencil.svg",
-            "Cross off the list",
-            () => toggleCrossedOff(li)
-    ));
-    li.appendChild(createActionIcon("../img/trash.svg",
-        "Remove from the list",
-        ()=> li.remove()
-    ));
-    li.addEventListener("mouseover", () => applyStyle(li, STYLES.liMouseOver));
-    li.addEventListener("mouseout", () => applyStyle(li, STYLES.liDefault));
+    const actionCross = {label: "Toggle crossed on/off", onClick: () => switchElementStyles(li, STYLES.uncrossed, STYLES.crossed)};
+    const actionRemove = {label: "Remove from the list", onClick: () => li.remove()};
+    li.appendChild(createActionIcon("../img/pencil.svg",actionCross));
+    li.appendChild(createActionIcon("../img/trash.svg", actionRemove));
+    const mouseHandler = () => switchElementStyles(li, STYLES.mouseOver, STYLES.mouseOut);
+    li.addEventListener("mouseover", mouseHandler);
+    li.addEventListener("mouseout", mouseHandler);
+
     li.addEventListener("contextmenu",
-        (event) => setCustomContextMenu(
-            event, menuManager, menuId, [
-        {label: "Cross off the list", onClick: () => toggleCrossedOff(li)},
-        {label: "Remove from the list", onClick: () => li.remove()},
-    ]));
+        (event) => setCustomContextMenu(event, menuManager, menuId, [actionCross, actionRemove]));
     return li;
 }
 
@@ -102,17 +102,6 @@ function showTasksCount(taskList) {
     alert(`There are ${taskList.childElementCount} tasks in the list.`);
 }
 
-function toggleCrossedOff(taskElement) {
-    if (taskElement.classList.contains("crossed-off")) {
-        taskElement.classList.remove("crossed-off");
-        taskElement.classList.add("uncrossed-off");
-    }
-    else {
-        taskElement.classList.remove("uncrossed-off");
-        taskElement.classList.add("crossed-off");
-    }
-}
-
 function handleAddBtnRightClick(event, manager, mId, taskInput, charCounter, taskList) {
     setCustomContextMenu(event, manager, mId, [
         {label: "Clear input", onClick: () => clearInput(taskInput, charCounter)},
@@ -135,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initCharCounter(charCounter, taskInput);
 
     addButton.addEventListener("click",
-        () => addTaskElement(taskList, taskInput, charCounter, menuManager.get("task-element"))
+        () => addTaskElement(taskList, taskInput, charCounter, menuManager, "button-add")
     );
 
     taskInput.addEventListener("keydown", (event) => {

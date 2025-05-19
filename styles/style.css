@@ -20,6 +20,14 @@ body {
     text-decoration: none;
 }
 
+.mouse-over {
+    background-color: #f0f0f0;
+}
+
+.mouse-out {
+    background-color: #fff;
+}
+
 /* Style input field */
 #taskInput {
     padding: 8px 12px;
