@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
             customMenuManager.hideAll();
         }
     });
-    document.addEventListener("contextmenu", (event) => {
+    document.addEventListener("contextmenu", () => {
         customMenuManager.hideAll();
     });
     window.addEventListener('resize', () => {
